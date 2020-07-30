@@ -1,5 +1,7 @@
 package com.criticalhit;
 
+import java.util.Random;
+
 //Seattle Tupuhi 1286197
 //Jesse Whitten 1811972
 public class Main {
