@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="m1a" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.criticalhit.Main" />
+    <module name="NeighbourhoodSwipSwap" />
+    <option name="PROGRAM_PARAMETERS" value="m1a.csv 40" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.criticalhit.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

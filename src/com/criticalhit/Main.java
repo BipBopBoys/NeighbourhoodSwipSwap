@@ -1,10 +1,8 @@
 package com.criticalhit;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -18,7 +16,6 @@ public class Main {
     List<Double> probList = new ArrayList<>();
 
     public static void main(String[] args) {
-
         if(args.length != 2)
             System.out.println("Input is NeighbourhoodSwipSwap [filename] [SheetWidth]");
         else{
@@ -26,12 +23,6 @@ public class Main {
             Main packingSolver = new Main();
             packingSolver.initialization(args[0],Integer.parseInt(args[1]));
         }
-
-
-
-	    //  Init boxes
-
-        // Init neighbourhoods
 
         //while
         // Choose destroy
@@ -42,9 +33,6 @@ public class Main {
         //update prob
 
         // end while
-
-    }
-
     }
 
     private void run(){
@@ -70,6 +58,7 @@ public class Main {
                 Box box = new Box(boxWidth,boxHeight);
                 currentSolution.initBox(box);
             }
+            currentSolution.sortNeighbourhoodsByWidth();
             newBest(currentSolution);
             bestSolution.printSolution();
         }catch(Exception e){
@@ -85,10 +74,9 @@ public class Main {
         }
     }
     private void newBest(Solution solution){
-        bestSolution = solution;
+        bestSolution = new Solution(solution);
     }
 
-    //Sortbywidth
 
     // repair bunnyhop
 

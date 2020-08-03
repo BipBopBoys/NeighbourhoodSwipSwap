@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="m1d" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.criticalhit.Main" />
+    <module name="NeighbourhoodSwipSwap" />
+    <option name="PROGRAM_PARAMETERS" value="m1d.csv 100" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
