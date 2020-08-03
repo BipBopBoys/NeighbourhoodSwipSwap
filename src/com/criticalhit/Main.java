@@ -3,9 +3,7 @@ package com.criticalhit;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 //Seattle Tupuhi 1286197
 //Jesse Whitten 1811972
@@ -23,11 +21,6 @@ public class Main {
             Main packingSolver = new Main();
             packingSolver.initialization(args[0],Integer.parseInt(args[1]));
         }
-
-
-	    //  Init boxes
-
-        // Init neighbourhoods
 
         //while
         // Choose destroy
@@ -63,8 +56,10 @@ public class Main {
                 Box box = new Box(boxWidth,boxHeight);
                 currentSolution.initBox(box);
             }
+            currentSolution.sortNeighbourhoodsByWidth();
             newBest(currentSolution);
             bestSolution.printSolution();
+
         }catch(Exception e){
             e.printStackTrace();
         }finally {
@@ -78,9 +73,9 @@ public class Main {
         }
     }
     private void newBest(Solution solution){
-        bestSolution = solution;
+        bestSolution = new Solution(solution);
     }
-    //Sortbywidth
+
 
     // repair bunnyhop
 

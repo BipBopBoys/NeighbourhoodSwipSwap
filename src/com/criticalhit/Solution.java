@@ -1,6 +1,8 @@
 package com.criticalhit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Solution {
@@ -9,6 +11,10 @@ public class Solution {
     public Solution(int _width) {
         width = _width;
         createNewRow();
+    }
+    public Solution(Solution solution){
+        this.width = solution.width;
+        this.rows = new ArrayList<>(solution.rows);
     }
     private void createNewRow(){
         Neighbourhood neighbourhood = new Neighbourhood();
@@ -32,5 +38,21 @@ public class Solution {
             height += row.getTotalHeight();
         }
         return height;
+    }
+    public void sortNeighbourhoodsByWidth(){
+        Collections.sort(rows, new SortByWidth());
+    }
+    public void sortNeighbourhoodsByHeight(){
+        Collections.sort(rows, new SortByHeight());
+    }
+}
+class SortByWidth implements Comparator<Neighbourhood> {
+    public int compare(Neighbourhood a, Neighbourhood b){
+        return a.getTotalWidth() - b.getTotalWidth();
+    }
+}
+class SortByHeight implements Comparator<Neighbourhood> {
+    public int compare(Neighbourhood a, Neighbourhood b){
+        return a.getTotalHeight() - b.getTotalHeight();
     }
 }
