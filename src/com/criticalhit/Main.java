@@ -3,7 +3,9 @@ package com.criticalhit;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 //Seattle Tupuhi 1286197
 //Jesse Whitten 1811972
@@ -59,7 +61,6 @@ public class Main {
             currentSolution.sortNeighbourhoodsByWidth();
             newBest(currentSolution);
             bestSolution.printSolution();
-
         }catch(Exception e){
             e.printStackTrace();
         }finally {
