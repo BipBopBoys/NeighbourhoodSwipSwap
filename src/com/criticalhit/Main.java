@@ -86,7 +86,7 @@ public class Main {
     // Destroy variables:
     private double d1DestructionVal = 0.10; // Percent of boxes to remove at random.
     private double d2DestructionVal = 0.10; // Percent of neighbourhoods to remove at random.
-    private double d3DestructionVal = 0.10; // Percent of boxes to swap at random.
+    private double d3DestructionVal = 0.10; // Percent of boxes to swap with partners at random.
     private List<Double> probOfDestroyMethodsList = new ArrayList<>(); // Contains the selection weight of each method.
 
     // Destroy method 1.
@@ -111,7 +111,6 @@ public class Main {
         {
             Neighbourhood curN = currentSolution.getNeighbourhood(i); // Go through each neighbourhood.
 
-            // If the current sum of prev box counts
             if(boxIndexesToRemove.get(indexOfCurrentBox) - currentIndexTraversed > curN.getBoxCount())
             {
                 currentIndexTraversed += curN.getBoxCount(); // Add this neighbourhood box count to the traverse.
