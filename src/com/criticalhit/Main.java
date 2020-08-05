@@ -1,27 +1,28 @@
 package com.criticalhit;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 //Seattle Tupuhi 1286197
-//Jesse Whitten 1811972
+//Jesse Whitten 1311972
 public class Main {
 
-    Solution currentSolution;
-    Solution bestSolution;
-    List<Double> probList = new ArrayList<>();
+    private Solution currentSolution;
+    private Solution bestSolution;
+    private List<Box> poolOfAvailableBoxes = new ArrayList<>(); // This is where the destroy methods dump the removed boxes for the repair method.
+    private int seed = 0;
 
     public static void main(String[] args) {
-        if(args.length != 2)
+        if (args.length != 2)
             System.out.println("Input is NeighbourhoodSwipSwap [filename] [SheetWidth]");
-        else{
+        else {
             System.out.println("Arguments Accepted: " + args[0] + " + " + args[1]);
             Main packingSolver = new Main();
-            packingSolver.initialization(args[0],Integer.parseInt(args[1]));
+            packingSolver.initialization(args[0], Integer.parseInt(args[1]));
         }
 
         //while
@@ -35,55 +36,184 @@ public class Main {
         // end while
     }
 
-    private void run(){
+    private void run() {
 
     }
-    private void initialization(String path, int width){
+
+    private void initialization(String path, int width) {
         BufferedReader reader = null;
-        try{
+        try {
             reader = new BufferedReader(new FileReader(path));
             String currentLine;
             String boxData[];
-            int boxWidth,boxHeight;
+            int boxWidth, boxHeight;
             currentSolution = new Solution(width);
-            while((currentLine = reader.readLine()) != null){
+            while ((currentLine = reader.readLine()) != null) {
                 boxData = currentLine.split(",");
-                if(Integer.parseInt(boxData[0])<Integer.parseInt(boxData[1])){
+                if (Integer.parseInt(boxData[0]) < Integer.parseInt(boxData[1])) {
                     boxWidth = Integer.parseInt(boxData[0]);
                     boxHeight = Integer.parseInt(boxData[1]);
-                }else{
+                } else {
                     boxWidth = Integer.parseInt(boxData[1]);
                     boxHeight = Integer.parseInt(boxData[0]);
                 }
-                Box box = new Box(boxWidth,boxHeight);
+                Box box = new Box(boxWidth, boxHeight);
                 currentSolution.initBox(box);
             }
             currentSolution.sortNeighbourhoodsByWidth();
             newBest(currentSolution);
             bestSolution.printSolution();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            try{
-                if(reader != null)
+        } finally {
+            try {
+                if (reader != null)
                     reader.close();
-            }catch(IOException ex){
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
 
         }
     }
-    private void newBest(Solution solution){
+
+    private void newBest(Solution solution) {
         bestSolution = new Solution(solution);
     }
 
 
     // repair bunnyhop
 
-    // destroy1
+    // Destroy variables:
+    private double d1DestructionVal = 0.10; // Percent of boxes to remove at random.
+    private double d2DestructionVal = 0.10; // Percent of neighbourhoods to remove at random.
+    private double d3DestructionVal = 0.10; // Percent of boxes to swap with partners at random.
+    private List<Double> probOfDestroyMethodsList = new ArrayList<>(); // Contains the selection weight of each method.
 
-    // destroy2
+    // Destroy method 1.
+    // Removes a random selection of boxes from the current solution.
+    private void destroyRemoveRandom() {
+        Random rand = new Random(seed);
+        int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
+        int numBoxes = currentSolution.getNumBoxes();
+        int numBoxesToRemove = (int) (numBoxes * d1DestructionVal);
+        List<Integer> boxIndexesToRemove = new ArrayList<>();
 
-    // destroy3
+        // Get a list of boxes to remove.
+        for (int i = 0; i < numBoxesToRemove; i++)
+            boxIndexesToRemove.set(i, rand.nextInt(numBoxesToRemove));
 
+        Collections.sort(boxIndexesToRemove);
+        int prevValue = -1; // This is for checking if we double up a value.
+        int currentIndexTraversed = 0;
+        int indexOfCurrentBox = 0;
+
+        for(int i = 0; i < numNeighbourhoods; i++)
+        {
+            Neighbourhood curN = currentSolution.getNeighbourhood(i); // Go through each neighbourhood.
+
+            if(boxIndexesToRemove.get(indexOfCurrentBox) - currentIndexTraversed > curN.getBoxCount())
+            {
+                currentIndexTraversed += curN.getBoxCount(); // Add this neighbourhood box count to the traverse.
+                continue; // Go to next Neighbourhood.
+            }
+            else
+            {
+                // We can find and remove the box from the neighbourhood, while adding it to the pool of available boxes.
+                poolOfAvailableBoxes.add(curN.findAndRemove(boxIndexesToRemove.get(indexOfCurrentBox) - currentIndexTraversed));
+
+                // Update the index to remove.
+                prevValue = boxIndexesToRemove.get(indexOfCurrentBox);
+                indexOfCurrentBox++;
+                if(indexOfCurrentBox == boxIndexesToRemove.size()) return; // If we are done.
+
+                // Here we skip any duplicate box indexes that may have been generated by the random object.
+                while(prevValue == boxIndexesToRemove.get(indexOfCurrentBox)) {
+                    indexOfCurrentBox++;
+                    if(indexOfCurrentBox == boxIndexesToRemove.size()) return; // If we are done.
+                }
+            }
+        }
+    }
+
+    // Destroy method 2.
+    // Removes a random selection of neighbourhoods, leaving their boxes in the available box list.
+    private void destroyNeighbourhoodRandom() {
+        Random rand = new Random(seed);
+        int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
+        int numNeighbourhoodsToRemove = (int) (numNeighbourhoods * d1DestructionVal);
+        List<Integer> neighbourhoodIndexesToRemove = new ArrayList<>();
+
+        // Get a list of boxes to remove.
+        for (int i = 0; i < numNeighbourhoodsToRemove; i++)
+            neighbourhoodIndexesToRemove.set(i, rand.nextInt(numNeighbourhoodsToRemove));
+
+        Collections.sort(neighbourhoodIndexesToRemove);
+
+        int prevIndex = -1;
+        for(int i = 0; i < numNeighbourhoodsToRemove; i++)
+        {
+            if(i >= neighbourhoodIndexesToRemove.size()) break; // Break if we have done all the removals.
+            if(prevIndex == neighbourhoodIndexesToRemove.get(i)) continue; // Skip duplicate removals of the same neighbourhood.
+
+            List<Box> boxList = currentSolution.getNeighbourhood(neighbourhoodIndexesToRemove.get(i)).getBoxes();
+            poolOfAvailableBoxes.addAll(boxList);
+
+            currentSolution.removeNeighbourhood(neighbourhoodIndexesToRemove.get(i));
+            prevIndex = neighbourhoodIndexesToRemove.get(i);
+        }
+    }
+
+    // Destroy method 3.
+    private void destroySwapRandom() {
+        Random rand = new Random(seed);
+        int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
+        int numBoxes = currentSolution.getNumBoxes();
+        int numBoxesToSwap = (int) (numBoxes * d1DestructionVal);
+        List<Integer> boxIndexesToSwap = new ArrayList<>();
+
+        // Get a list of boxes to remove.
+        for (int i = 0; i < numBoxesToSwap; i++)
+            boxIndexesToSwap.set(i, rand.nextInt(numBoxesToSwap));
+
+        Collections.sort(boxIndexesToSwap);
+
+        int prevValue; // This is for checking if we double up a index value.
+        int currentIndexTraversed = 0;
+        int indexOfCurrentBox = 0;
+
+        for(int i = 0; i < numNeighbourhoods; i++)
+        {
+            Neighbourhood curN = currentSolution.getNeighbourhood(i); // Go through each neighbourhood.
+
+            if(boxIndexesToSwap.get(indexOfCurrentBox) - currentIndexTraversed > curN.getBoxCount())
+            {
+                currentIndexTraversed += curN.getBoxCount(); // Add this neighbourhood box count to the traverse.
+                continue; // Go to next Neighbourhood.
+            }
+            else
+            {
+                // Find a random box from a random neighbourhood.
+                Box sourceBox = curN.findAndRemove(boxIndexesToSwap.get(indexOfCurrentBox) - currentIndexTraversed);
+                Neighbourhood targetN = currentSolution.getNeighbourhood(rand.nextInt(numNeighbourhoods));
+                Box targetBox = targetN.findAndRemove(rand.nextInt(targetN.getBoxCount()));
+
+                // Swap the two boxes.
+                targetN.setBox(sourceBox);
+                curN.setBox(targetBox);
+
+                // Update the index to remove.
+                prevValue = boxIndexesToSwap.get(indexOfCurrentBox);
+                indexOfCurrentBox++;
+                if(indexOfCurrentBox == boxIndexesToSwap.size()) return; // If we are done.
+
+                // Here we skip any duplicate box indexes that may have been generated by the random object.
+                while(prevValue == boxIndexesToSwap.get(indexOfCurrentBox)) {
+                    indexOfCurrentBox++;
+                    if(indexOfCurrentBox == boxIndexesToSwap.size()) return; // If we are done.
+                }
+            }
+        }
+    }
 }
+
+
