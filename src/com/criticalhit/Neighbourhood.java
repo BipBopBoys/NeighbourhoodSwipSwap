@@ -26,17 +26,10 @@ public class Neighbourhood {
     public List<Box> getBoxes() {
         return boxes;
     }
-
     public void setBoxes(List<Box> boxes) {
         this.boxes = boxes;
     }
 
-
-
-    public Box getBox(){
-        Random rng = new Random();
-        return boxes.get(rng.nextInt(boxes.size()));    //Possibly want to remove the box
-    }
     public void printRow(){
         for (Box box: boxes) {
             System.out.print("("+box.getWidth()+","+box.getHeight()+")");
