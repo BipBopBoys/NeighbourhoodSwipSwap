@@ -13,6 +13,17 @@ public class Neighbourhood {
     String ANSI_RED = "\u001B[31m";
     String ANSI_RESET = "\u001B[0m";
 
+
+    // This method finds a box at the given index and returns it, while also removing it from its own list.
+    public Box findAndRemove(int index)
+    {
+        if(index >= boxes.size())
+            return null;
+        Box box = boxes.get(index);
+        boxes.remove(index);
+        return box;
+    }
+
     public Neighbourhood(int _maxWidth){
         maxWidth = _maxWidth;
     }
@@ -22,19 +33,23 @@ public class Neighbourhood {
     }
     public void shuffleOrBoogie(){
 
+
     }
 
     public List<Box> getBoxes() {
         return boxes;
     }
-
     public void setBoxes(List<Box> boxes) {
         this.boxes = boxes;
     }
+
+
+
     public Box getBox(){
         Random rng = new Random();
         return boxes.get(rng.nextInt(boxes.size()));    //Possibly want to remove the box
     }
+
     public void printRow(){
         for (Box box: boxes) {
             System.out.print("("+box.getWidth()+","+box.getHeight()+")");

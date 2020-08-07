@@ -6,8 +6,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Solution {
-    List<Neighbourhood> rows = new ArrayList<>();
-    int width;
+    private List<Neighbourhood> rows = new ArrayList<>();
+    private int numBoxes = 0;
+    private int width;
     public Solution(int _width) {
         width = _width;
         createNewRow();
@@ -28,6 +29,7 @@ public class Solution {
             createNewRow();
         }
         rows.get(rows.size()-1).setBox(newBox);
+        numBoxes++; // Count the absolute total number of boxes.
     }
     public void printSolution(){
         for (Neighbourhood row: rows) {
@@ -42,6 +44,25 @@ public class Solution {
         }
         return height;
     }
+
+    public int getNumNeighbourhoods()
+    {
+        return rows.size();
+    }
+    public int getNumBoxes()
+    {
+        return numBoxes;
+    }
+    public Neighbourhood getNeighbourhood(int i)
+    {
+        return rows.get(i);
+    }
+    public void removeNeighbourhood(int index)
+    {
+        if(index >= rows.size()) return;
+        rows.remove(index);
+    }
+
 
     public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
         Boolean broken = false;
@@ -64,6 +85,7 @@ public class Solution {
 
         return broken;
     }
+
 
     public void sortNeighbourhoodsByWidth(){
         Collections.sort(rows, new SortByWidth());
