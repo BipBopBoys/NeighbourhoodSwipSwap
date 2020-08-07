@@ -18,11 +18,14 @@ public class Solution {
         this.rows = new ArrayList<>(solution.rows);
     }
     private void createNewRow(){
-        Neighbourhood neighbourhood = new Neighbourhood();
+        Neighbourhood neighbourhood = new Neighbourhood(width);
+        rows.add(neighbourhood);
+    }
+    private void createNewRow(Neighbourhood neighbourhood){
         rows.add(neighbourhood);
     }
     public void initBox(Box newBox){
-        if(rows.get(rows.size()-1).getTotalWidth() + newBox.getWidth() > width){
+        if(!rows.get(rows.size()-1).setBox(newBox)){
             createNewRow();
         }
         rows.get(rows.size()-1).setBox(newBox);
@@ -41,6 +44,7 @@ public class Solution {
         }
         return height;
     }
+
     public int getNumNeighbourhoods()
     {
         return rows.size();
@@ -58,6 +62,31 @@ public class Solution {
         if(index >= rows.size()) return;
         rows.remove(index);
     }
+
+
+    public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
+        Boolean broken = false;
+        Neighbourhood tmpNeighbourhood = new Neighbourhood(neighbourhood);
+        Neighbourhood bestTmpNeighbourhood = new Neighbourhood(neighbourhood);
+        Solution miniSolution,bestMiniSolution;
+
+        tmpNeighbourhood.shuffleOrBoogie();
+        if(tmpNeighbourhood.getTotalWidth() > width){
+            miniSolution = new Solution(width);
+            for (Box box: tmpNeighbourhood.getBoxes()) {
+                miniSolution.initBox(box);
+            }
+            if(miniSolution.totalHeight() < bestMiniSolution.getTotalHeight())
+                bestMiniSolution = new Solution(miniSolution);
+        }else if(tmpNeighbourhood.getTotalHeight()<bestTmpNeighbourhood.getTotalHeight())
+            bestTmpNeighbourhood = new Neighbourhood(tmpNeighbourhood);
+
+
+
+        return broken;
+    }
+
+
     public void sortNeighbourhoodsByWidth(){
         Collections.sort(rows, new SortByWidth());
     }
