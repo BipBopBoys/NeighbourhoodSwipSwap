@@ -27,9 +27,13 @@ public class Neighbourhood {
     public Neighbourhood(int _maxWidth){
         maxWidth = _maxWidth;
     }
+
     public Neighbourhood(Neighbourhood neighbourhood){
         this.maxWidth = neighbourhood.maxWidth;
-        this.boxes = new ArrayList<>(neighbourhood.boxes);
+        this.boxes = new ArrayList<>();
+        for (Box box: neighbourhood.boxes) {
+            this.boxes.add(new Box(box.getHeight(), box.getWidth()));
+        }
     }
     public void shuffleOrBoogie(){
 
@@ -57,6 +61,7 @@ public class Neighbourhood {
         System.out.print(":"+ ANSI_RED +"("+ANSI_RESET+ getTotalWidth()+ANSI_RED+","+ANSI_RESET+getTotalHeight()+ANSI_RED+")\n" + ANSI_RESET);
     }
     public int getBoxCount(){ return boxes.size();}
+
     public Boolean setBox(Box box){
         if((getTotalWidth() + box.getWidth()) < maxWidth) {
             boxes.add(box);
