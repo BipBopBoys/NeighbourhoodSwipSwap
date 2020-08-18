@@ -7,7 +7,7 @@ import java.util.List;
 public class Box {
     private int height,width;
     List<Record> history = new ArrayList<>();
-    public Box(int _height, int _width){
+        public Box(int _height, int _width){
         height = _height;
         width = _width;
     }
