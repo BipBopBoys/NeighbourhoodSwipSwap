@@ -15,6 +15,7 @@ public class Main {
     private Solution bestSolution;
     private List<Box> poolOfAvailableBoxes = new ArrayList<>(); // This is where the destroy methods dump the removed boxes for the repair method.
     private int seed = 0;
+    private int numboxes = 0;
 
     public static void main(String[] args) {
         if (args.length != 2)
@@ -23,7 +24,9 @@ public class Main {
             System.out.println("Arguments Accepted: " + args[0] + " + " + args[1]);
             Main packingSolver = new Main();
             packingSolver.initialization(args[0], Integer.parseInt(args[1]));
+            packingSolver.run();
         }
+
 
         //while
         // Choose destroy
@@ -37,9 +40,30 @@ public class Main {
     }
 
     private void run() {
-
+        for (int i = 0;i<10;i++){
+            //destroyNeighbourhoodRandom();
+            destroyRemoveRandom();
+            //printLonelyBoxes();
+            houseLonelyBoxes();
+            newBest(currentSolution);
+        }
     }
-
+    private void houseLonelyBoxes(){
+        int i = 0;
+        for (Box box: poolOfAvailableBoxes) {
+            i++;
+            currentSolution.repair(box);
+        }
+        printLonelyBoxes();
+        System.out.println(i);
+        poolOfAvailableBoxes.clear();
+    }
+    private void printLonelyBoxes(){
+        for (Box box: poolOfAvailableBoxes) {
+            System.out.print("("+box.getWidth()+","+box.getHeight()+"),");
+        }
+        System.out.print("\n");
+    }
     private void initialization(String path, int width) {
         BufferedReader reader = null;
         try {
@@ -58,10 +82,11 @@ public class Main {
                     boxHeight = Integer.parseInt(boxData[0]);
                 }
                 Box box = new Box(boxWidth, boxHeight);
-                currentSolution.initBox(box);
+                currentSolution.repair(box);
+                numboxes++;
             }
             currentSolution.sortNeighbourhoodsByWidth();
-            newBest(currentSolution);
+            bestSolution = new Solution(currentSolution);
             bestSolution.printSolution();
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,7 +102,11 @@ public class Main {
     }
 
     private void newBest(Solution solution) {
-        bestSolution = new Solution(solution);
+        if(solution.totalHeight() < bestSolution.totalHeight()) {
+            bestSolution = new Solution(solution);
+            bestSolution.printSolution();
+            solution.printSolution();
+        }
     }
 
 
@@ -85,7 +114,7 @@ public class Main {
 
     // Destroy variables:
     private double d1DestructionVal = 0.10; // Percent of boxes to remove at random.
-    private double d2DestructionVal = 0.10; // Percent of neighbourhoods to remove at random.
+    private double d2DestructionVal = 0.30; // Percent of neighbourhoods to remove at random.
     private double d3DestructionVal = 0.10; // Percent of boxes to swap with partners at random.
     private List<Double> probOfDestroyMethodsList = new ArrayList<>(); // Contains the selection weight of each method.
 
@@ -94,13 +123,14 @@ public class Main {
     private void destroyRemoveRandom() {
         Random rand = new Random(seed);
         int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
-        int numBoxes = currentSolution.getNumBoxes();
+        int numBoxes = numboxes;
         int numBoxesToRemove = (int) (numBoxes * d1DestructionVal);
         List<Integer> boxIndexesToRemove = new ArrayList<>();
 
         // Get a list of boxes to remove.
         for (int i = 0; i < numBoxesToRemove; i++)
-            boxIndexesToRemove.set(i, rand.nextInt(numBoxesToRemove));
+            boxIndexesToRemove.add(i, rand.nextInt(numBoxes));
+        System.out.println(boxIndexesToRemove);
 
         Collections.sort(boxIndexesToRemove);
         int prevValue = -1; // This is for checking if we double up a value.
@@ -139,27 +169,14 @@ public class Main {
     // Removes a random selection of neighbourhoods, leaving their boxes in the available box list.
     private void destroyNeighbourhoodRandom() {
         Random rand = new Random(seed);
-        int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
-        int numNeighbourhoodsToRemove = (int) (numNeighbourhoods * d1DestructionVal);
-        List<Integer> neighbourhoodIndexesToRemove = new ArrayList<>();
-
-        // Get a list of boxes to remove.
-        for (int i = 0; i < numNeighbourhoodsToRemove; i++)
-            neighbourhoodIndexesToRemove.set(i, rand.nextInt(numNeighbourhoodsToRemove));
-
-        Collections.sort(neighbourhoodIndexesToRemove);
-
-        int prevIndex = -1;
+        int numNeighbourhoodsToRemove = (int) (currentSolution.getNumNeighbourhoods() * d2DestructionVal);
         for(int i = 0; i < numNeighbourhoodsToRemove; i++)
         {
-            if(i >= neighbourhoodIndexesToRemove.size()) break; // Break if we have done all the removals.
-            if(prevIndex == neighbourhoodIndexesToRemove.get(i)) continue; // Skip duplicate removals of the same neighbourhood.
-
-            List<Box> boxList = currentSolution.getNeighbourhood(neighbourhoodIndexesToRemove.get(i)).getBoxes();
+            int index = rand.nextInt(currentSolution.getNumNeighbourhoods());
+            List<Box> boxList = currentSolution.getNeighbourhood(index).getBoxes();
             poolOfAvailableBoxes.addAll(boxList);
+            currentSolution.removeNeighbourhood(index);
 
-            currentSolution.removeNeighbourhood(neighbourhoodIndexesToRemove.get(i));
-            prevIndex = neighbourhoodIndexesToRemove.get(i);
         }
     }
 
@@ -167,13 +184,13 @@ public class Main {
     private void destroySwapRandom() {
         Random rand = new Random(seed);
         int numNeighbourhoods = currentSolution.getNumNeighbourhoods();
-        int numBoxes = currentSolution.getNumBoxes();
-        int numBoxesToSwap = (int) (numBoxes * d1DestructionVal);
+        int numBoxes = numboxes;
+        int numBoxesToSwap = (int) (numBoxes * d3DestructionVal);
         List<Integer> boxIndexesToSwap = new ArrayList<>();
 
         // Get a list of boxes to remove.
         for (int i = 0; i < numBoxesToSwap; i++)
-            boxIndexesToSwap.set(i, rand.nextInt(numBoxesToSwap));
+            boxIndexesToSwap.add(i, rand.nextInt(numBoxes));
 
         Collections.sort(boxIndexesToSwap);
 
