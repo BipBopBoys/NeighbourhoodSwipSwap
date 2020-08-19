@@ -25,24 +25,34 @@ public class Main {
 
 
     public static void main(String[] args) {
-        if (args.length != 2)
+        if (args.length != 2 && args.length != 3)
             System.out.println("Input is NeighbourhoodSwipSwap [filename] [SheetWidth]");
         else {
             System.out.println("Arguments Accepted: " + args[0] + " + " + args[1]);
             Main packingSolver = new Main();
             packingSolver.initialization(args[0], Integer.parseInt(args[1]));
-            packingSolver.run();
+            int best = packingSolver.run();
+            if(args.length == 3) {
+                while(best > Integer.parseInt(args[2])){
+                    packingSolver.initialization(args[0], Integer.parseInt(args[1]));
+                    best = packingSolver.run();
+                }
+            }
         }
     }
 
-    private void run() {
-        for (int i = 0; i < 1000000; i++){
+    private int run() {
+        for (int i = 0; i < 100000; i++){
+            //System.out.println(i);
             chooseAndApplyDestroyMethod();
             //printLonelyBoxes();
             houseLonelyBoxes();
             newBest(currentSolution);
             updateDestroyWeights();
         }
+        globalBestSolution.finalPass();
+        globalBestSolution.printSolution();
+        return globalBestSolution.totalHeight();
     }
 
     private void updateDestroyWeights() {
@@ -99,6 +109,9 @@ public class Main {
             destroySwapRandom();
             lastUsedDestroyMethod = 2;
         }
+        if(numBoxes != globalBestSolution.getBoxCount()){
+            System.err.println("Lost Boxes");
+        }
     }
 
     private void houseLonelyBoxes(){
@@ -125,6 +138,7 @@ public class Main {
             String currentLine;
             String boxData[];
             int boxWidth, boxHeight;
+            numBoxes = 0;
             currentSolution = new Solution(width);
             while ((currentLine = reader.readLine()) != null) {
                 boxData = currentLine.split(",");
@@ -136,10 +150,15 @@ public class Main {
                     boxHeight = Integer.parseInt(boxData[0]);
                 }
                 Box box = new Box(boxWidth, boxHeight);
-                currentSolution.repair(box);
+                poolOfAvailableBoxes.add(box);
+
+                //currentSolution.repair(box);
                 numBoxes++;
             }
-            currentSolution.sortNeighbourhoodsByWidth();
+            //Collections.sort(poolOfAvailableBoxes, new SortBoxes());
+            //printLonelyBoxes();
+            houseLonelyBoxes();
+            //currentSolution.sortNeighbourhoodsByWidth();
             globalBestSolution = new Solution(currentSolution);
             previousSolution = new Solution(currentSolution);
             globalBestSolution.printSolution();
@@ -165,7 +184,7 @@ public class Main {
         // If we have found a global best.
         if (solution.totalHeight() < globalBestSolution.totalHeight()) {
             globalBestSolution = new Solution(solution);
-            globalBestSolution.printSolution();
+            globalBestSolution.printHeight();
             iterationResult = 0;
         // If we are worse than the previous solution, revert to it and try again.
         }else if(solution.totalHeight() >= previousSolution.totalHeight()) {
@@ -241,5 +260,9 @@ public class Main {
         }
     }
 }
-
+class SortBoxes implements Comparator<Box>{
+    public int compare(Box a, Box b){
+        return b.getHeight() - a.getHeight();
+    }
+}
 
