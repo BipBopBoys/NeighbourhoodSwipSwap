@@ -74,14 +74,6 @@ public class Solution {
     }
 
 
-    public int bunnyHop(Box box){
-        for (Neighbourhood row: rows) {
-
-        }
-        return -1;
-    }
-
-
     /*public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
         Boolean broken = false;
         Neighbourhood tmpNeighbourhood = new Neighbourhood(neighbourhood);
