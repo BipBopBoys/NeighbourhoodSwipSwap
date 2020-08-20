@@ -36,8 +36,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         //String[] args = new String[]{"m1a.csv","40"};
-        //String[] args = new String[]{"m1c.csv","100"};
-        String[] args = new String[]{"m1d.csv","100"};
+        String[] args = new String[]{"m1c.csv","100"};
+        //String[] args = new String[]{"m1d.csv","100"};
 
         if (args.length != 2 && args.length != 3)
             System.out.println("Input is NeighbourhoodSwipSwap [filename] [SheetWidth]");
