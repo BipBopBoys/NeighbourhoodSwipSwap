@@ -1,8 +1,7 @@
 package com.criticalhit;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import  java.lang.Math;
 
 //Seattle Tupuhi 1286197
 //Jesse Whitten 1811972
@@ -35,6 +34,8 @@ public class Neighbourhood {
             this.boxes.add(new Box(box.getHeight(), box.getWidth()));
         }
     }
+
+
     public void shuffleOrBoogie(){
 
 
@@ -56,18 +57,56 @@ public class Neighbourhood {
 
     public void printRow(){
         for (Box box: boxes) {
-            System.out.print("("+box.getWidth()+","+box.getHeight()+")");
+            box.printBox();
         }
         System.out.print(":"+ ANSI_RED +"("+ANSI_RESET+ getTotalWidth()+ANSI_RED+","+ANSI_RESET+getTotalHeight()+ANSI_RED+")\n" + ANSI_RESET);
     }
     public int getBoxCount(){ return boxes.size();}
-
+    public void placeBox(Box box){
+        boxes.add(box);
+    }
     public Boolean setBox(Box box){
-        if((getTotalWidth() + box.getWidth()) < maxWidth) {
+
+        if(boxes.isEmpty()){
             boxes.add(box);
             return true;
-        }else
-            return false;
+        }
+
+        float aHeight = getAverageHeight();
+        if(Math.abs(Float.compare(aHeight,box.getHeight())) < 1 ){
+            if((getTotalWidth() + box.getWidth()) < maxWidth) {
+                boxes.add(box);
+                return true;
+            }
+        }
+        if(Math.abs(Float.compare(aHeight,box.getWidth())) < 1 ){
+            box.rotate();
+            if((getTotalWidth() + box.getWidth()) < maxWidth){
+                boxes.add(box);
+                return true;
+            }
+        }
+        return false;
+    }
+    private Boolean betweenTallAndShort(int size){
+        int tally = 0;
+        int shorty = 0;
+        for (Box box: boxes) {
+            if(box.getHeight() > tally)
+                tally = box.getHeight();
+            if(box.getHeight() < shorty)
+                shorty = box.getHeight();
+        }
+        return (tally >= size && shorty <= size);
+    }
+    private float getAverageHeight(){
+        float aHeight = 0;{
+            for (Box box: boxes) {
+                aHeight += box.getHeight();
+            }
+            aHeight /= boxes.size();
+        }
+        return aHeight;
     }
     public int getTotalHeight(){
         int height = 0;
@@ -84,5 +123,18 @@ public class Neighbourhood {
         }
         return width;
     }
-
+    public void sortByHeight(){
+        Collections.sort(boxes, new SortByHeight());
+    }
+    public int getSpace(){
+        return maxWidth - getTotalWidth();
+    }
+    public Box getBigBox(){
+        return boxes.get(0);
+    }
+}
+class SortByHeight implements Comparator<Box> {
+    public int compare(Box a, Box b){
+        return b.getWidth() - a.getWidth();
+    }
 }

@@ -39,7 +39,17 @@ public class Box {
     public void addToHistory(Record r){
         history.add(r);
     }
-
+    public void printBox(){
+        System.out.print("("+width+","+height+")");
+    }
+    public void rotate(){
+            //System.out.println("Rotate");
+           // printBox();
+        int tmp = width;
+        width = height;
+        height = tmp;
+        //printBox();
+    }
     public Boolean hasBeenTo(Record r){
         //Has the box been to location before
         return false;

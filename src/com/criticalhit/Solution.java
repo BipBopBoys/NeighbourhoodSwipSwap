@@ -14,7 +14,8 @@ public class Solution {
     }
 
     public void repair(Box box){
-        for(int i = rows.size()-1; i > 0;i--) {
+        sortNeighbourhoodsByWidth();
+        for(int i = rows.size()-1; i >= 0;i--) {
             if(rows.get(i).setBox(box))
                 return;
         }
@@ -45,9 +46,23 @@ public class Solution {
         numBoxes++; // Count the absolute total number of boxes.
     }*/
     public void printSolution(){
-        //for (Neighbourhood row: rows) {
-        //    row.printRow();
-        //}
+        for (Neighbourhood row: rows) {
+            row.printRow();
+        }
+        printHeight();
+        printBoxCount();
+    }
+    public int getBoxCount(){
+        int c = 0;
+        for (Neighbourhood n: rows) {
+            c += n.getBoxCount();
+        }
+        return c;
+    }
+    public void printBoxCount(){
+        System.out.println("Num Boxes = " + getBoxCount());
+    }
+    public void printHeight(){
         System.out.println("Total Height:"+totalHeight());
     }
     public int totalHeight(){
@@ -73,8 +88,8 @@ public class Solution {
         rows.remove(index);
     }
 
-
-    /*public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
+/*
+    public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
         Boolean broken = false;
         Neighbourhood tmpNeighbourhood = new Neighbourhood(neighbourhood);
         Neighbourhood bestTmpNeighbourhood = new Neighbourhood(neighbourhood);
@@ -94,14 +109,58 @@ public class Solution {
 
 
         return broken;
-    }*/
+    }
+*/
+    public void finalPass(){
+        sortSolutionByHeight();
+        sortNeighbourhoodsByWidth();
+        sortNeighbourhoodsByHeight();
+        //printSolution();
+        while(true){
+            //printSolution();
+            if(rows.get(0).getTotalWidth() == 0)
+                rows.remove(0);
+            else{
+                Box box = rows.get(0).findAndRemove(0);
+                box.rotate();
+                for(int i = rows.size()-1;i >= 0;i--){
+                    if(i == 0){
+                        box.rotate();
+                        rows.get(i).placeBox(box);
+                        return;
+                    }
+                    if(box.getWidth() + rows.get(i).getTotalWidth() <= width && box.getHeight() <= rows.get(i).getTotalHeight()){
+                        rows.get(i).placeBox(box);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
+    private int availableSpace(){
+        int space = 0;
+        for(int i = 1; i < rows.size()-1;i++){
+            space += rows.get(i).getSpace();
+        }
+        return space;
+    }
+    public void sortSolutionByHeight(){
+        Collections.sort(rows, new SortBySolutionHeight());
+    }
 
     public void sortNeighbourhoodsByWidth(){
         Collections.sort(rows, new SortByWidth());
     }
     public void sortNeighbourhoodsByHeight(){
-        Collections.sort(rows, new SortByHeight());
+        for (Neighbourhood row: rows) {
+            row.sortByHeight();
+        }
+    }
+}
+class SortBySolutionHeight implements Comparator<Neighbourhood> {
+    public int compare(Neighbourhood a, Neighbourhood b){
+        return b.getTotalHeight() - a.getTotalHeight();
     }
 }
 class SortByWidth implements Comparator<Neighbourhood> {
@@ -109,8 +168,4 @@ class SortByWidth implements Comparator<Neighbourhood> {
         return a.getTotalWidth() - b.getTotalWidth();
     }
 }
-class SortByHeight implements Comparator<Neighbourhood> {
-    public int compare(Neighbourhood a, Neighbourhood b){
-        return a.getTotalHeight() - b.getTotalHeight();
-    }
-}
+
