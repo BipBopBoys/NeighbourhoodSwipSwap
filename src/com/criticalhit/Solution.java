@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+//Seattle Tupuhi 1286197
+//Jesse Whitten 1311972
 public class Solution {
     private List<Neighbourhood> rows = new ArrayList<>();
     private int width;

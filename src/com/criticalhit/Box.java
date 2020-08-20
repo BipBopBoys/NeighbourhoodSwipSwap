@@ -2,8 +2,9 @@ package com.criticalhit;
 
 import java.util.ArrayList;
 import java.util.List;
+
 //Seattle Tupuhi 1286197
-//Jesse Whitten 1811972
+//Jesse Whitten 1311972
 public class Box {
     private int height,width;
     List<Record> history = new ArrayList<>();

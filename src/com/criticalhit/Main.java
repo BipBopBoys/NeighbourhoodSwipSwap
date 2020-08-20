@@ -1,5 +1,13 @@
 package com.criticalhit;
 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,7 +17,7 @@ import java.util.List;
 
 //Seattle Tupuhi 1286197
 //Jesse Whitten 1311972
-public class Main {
+public class Main extends Application {
 
     private Solution currentSolution;
     private Solution globalBestSolution;
@@ -24,24 +32,31 @@ public class Main {
     private Random rand = new Random();
 
 
-    public static void main(String[] args) {
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        //String[] args = new String[]{"m1a.csv","40"};
+        String[] args = new String[]{"m1c.csv","100"};
+        //String[] args = new String[]{"m1d.csv","100"};
+
         if (args.length != 2 && args.length != 3)
             System.out.println("Input is NeighbourhoodSwipSwap [filename] [SheetWidth]");
         else {
             System.out.println("Arguments Accepted: " + args[0] + " + " + args[1]);
             Main packingSolver = new Main();
             packingSolver.initialization(args[0], Integer.parseInt(args[1]));
-            int best = packingSolver.run();
+            int best = packingSolver.run(primaryStage);
             if(args.length == 3) {
                 while(best > Integer.parseInt(args[2])){
                     packingSolver.initialization(args[0], Integer.parseInt(args[1]));
-                    best = packingSolver.run();
+                    best = packingSolver.run(primaryStage);
                 }
             }
         }
+
     }
 
-    private int run() {
+    private int run(Stage primaryStage) {
         for (int i = 0; i < 100000; i++){
             //System.out.println(i);
             chooseAndApplyDestroyMethod();
@@ -49,9 +64,14 @@ public class Main {
             houseLonelyBoxes();
             newBest(currentSolution);
             updateDestroyWeights();
+
+
         }
         globalBestSolution.finalPass();
         globalBestSolution.printSolution();
+
+        drawBoxes(primaryStage, globalBestSolution);
+
         return globalBestSolution.totalHeight();
     }
 
@@ -254,9 +274,65 @@ public class Main {
             Box box1 = n1.findAndRemove(rand.nextInt(n1.getBoxCount()));
             Box box2 = n2.findAndRemove(rand.nextInt(n2.getBoxCount()));
 
-            // Add them to the others neighbourhoods.
-            n1.setBox(box1);
-            n2.setBox(box2);
+            // Add them to the others neighbourhoods if they can fit.
+            if(!n1.setBox(box1))
+                poolOfAvailableBoxes.add(box1);
+            if(!n2.setBox(box2))
+                poolOfAvailableBoxes.add(box2);
+        }
+    }
+    // Draw method
+    private void drawBoxes(Stage primaryStage, Solution solution) {
+
+        // Draw the optimal solution.
+        Pane pane = new Pane();
+        Canvas canvas = new Canvas(1000, 1000);
+        pane.getChildren().add(canvas);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        primaryStage.setScene(new Scene(pane));
+        primaryStage.show();
+
+        try {
+            gc.setFill(Color.BLUE);
+            gc.setStroke(Color.BLACK);
+            gc.setLineWidth(2);
+            int xLoc = 0;
+            int yLoc = (int) canvas.getHeight();
+
+            int sizeScalar = 3;
+
+            for(int i = 0; i < solution.getNumNeighbourhoods(); i++)
+            {
+                Neighbourhood neighbourhood = solution.getNeighbourhood(i);
+                if(neighbourhood == null) continue;
+
+                for(int j = 0; j < solution.getNeighbourhood(i).getBoxes().size(); j++)
+                {
+                    Box box = solution.getNeighbourhood(i).getBoxes().get(j);
+                    if(box == null) continue;
+
+
+                    // Provide the offset from the bottom of the neighbourhood.
+                    yLoc -= box.getHeight()*sizeScalar;
+
+                    // Draw the box.
+                    gc.fillRect(xLoc, yLoc, box.getWidth()*sizeScalar, box.getHeight()*sizeScalar);
+                    gc.strokeRect(xLoc, yLoc, box.getWidth()*sizeScalar, box.getHeight()*sizeScalar);
+
+                    xLoc += box.getWidth()*sizeScalar; // Move gc along to the next box.
+                    yLoc += box.getHeight()*sizeScalar; // Remove the offset provided earlier.
+                }
+                // Move gc to the start of the next neighbourhood.
+                xLoc = 0;
+                yLoc -= neighbourhood.getTotalHeight()*sizeScalar;
+            }
+
+
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }
