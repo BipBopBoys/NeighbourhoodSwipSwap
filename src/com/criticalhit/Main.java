@@ -254,9 +254,11 @@ public class Main {
             Box box1 = n1.findAndRemove(rand.nextInt(n1.getBoxCount()));
             Box box2 = n2.findAndRemove(rand.nextInt(n2.getBoxCount()));
 
-            // Add them to the others neighbourhoods.
-            n1.setBox(box1);
-            n2.setBox(box2);
+            // Add them to the others neighbourhoods if they can fit.
+            if(!n1.setBox(box1))
+                poolOfAvailableBoxes.add(box1);
+            if(!n2.setBox(box2))
+                poolOfAvailableBoxes.add(box2);
         }
     }
 }
