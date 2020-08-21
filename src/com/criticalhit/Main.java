@@ -35,8 +35,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        //String[] args = new String[]{"m1a.csv","40"};
-        String[] args = new String[]{"m1c.csv","100"};
+        String[] args = new String[]{"m1a.csv","10"};
+        //String[] args = new String[]{"m1c.csv","100"};
         //String[] args = new String[]{"m1d.csv","100"};
 
         if (args.length != 2 && args.length != 3)
@@ -55,6 +55,64 @@ public class Main extends Application {
         }
 
     }
+    private void initialization(String path, int width) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(path));
+            String currentLine;
+            String boxData[];
+            int boxWidth, boxHeight;
+            numBoxes = 0;
+            currentSolution = new Solution(width);
+            while ((currentLine = reader.readLine()) != null) {
+                boxData = currentLine.split(",");
+
+                boxWidth = Integer.parseInt(boxData[0]);
+                boxHeight = Integer.parseInt(boxData[1]);
+
+                Box box = new Box(boxWidth, boxHeight);
+                poolOfAvailableBoxes.add(box);
+                numBoxes++;
+            }
+            houseLonelyBoxes();
+            globalBestSolution = new Solution(currentSolution);
+            previousSolution = new Solution(currentSolution);
+            globalBestSolution.printSolution();
+
+            // Init weights.
+            destroyMethodWeights[0] = 1.00;
+            destroyMethodWeights[1] = 1.00;
+            destroyMethodWeights[2] = 1.00;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (reader != null)
+                    reader.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+    }
+
+    private void houseLonelyBoxes(){
+        int i = 0;
+        for (Box box: poolOfAvailableBoxes) {
+            i++;
+            currentSolution.repair(box);
+        }
+        //printLonelyBoxes();
+        //System.out.println(i);
+        poolOfAvailableBoxes.clear();
+    }
+
+    private void printLonelyBoxes(){
+        for (Box box: poolOfAvailableBoxes) {
+            System.out.print("("+box.getWidth()+","+box.getHeight()+"),");
+        }
+        System.out.print("\n");
+    }
 
     private int run(Stage primaryStage) {
         for (int i = 0; i < 100000; i++){
@@ -64,8 +122,6 @@ public class Main extends Application {
             houseLonelyBoxes();
             newBest(currentSolution);
             updateDestroyWeights();
-
-
         }
         globalBestSolution.finalPass();
         globalBestSolution.printSolution();
@@ -73,37 +129,6 @@ public class Main extends Application {
         drawBoxes(primaryStage, globalBestSolution);
 
         return globalBestSolution.totalHeight();
-    }
-
-    private void updateDestroyWeights() {
-        double gamma = 0.6; // Strength of adjustment.
-        double GAMMA = -1;
-        // Choose the reward values for each result.
-        double w1 = 1.4; // Global.
-        double w2 = 1.2; // Better than Prev.
-        double w3 = 0.8; // Failed.
-
-        // Get the GAMMA value.
-        switch (iterationResult) {
-            case 0: {
-                GAMMA = w1;
-            }
-            case 1: {
-                GAMMA = w2;
-            }
-            case 2: {
-                GAMMA = w3;
-            }
-        }
-
-        if (lastUsedDestroyMethod == -1) return; // Error!
-        else if(lastUsedDestroyMethod == 0) { // Remove Box.
-            destroyMethodWeights[0] = gamma*destroyMethodWeights[0] + (1-gamma)*GAMMA;
-        } else if(lastUsedDestroyMethod == 1) { // Remove Neighbourhood.
-            destroyMethodWeights[1] = gamma*destroyMethodWeights[1] + (1-gamma)*GAMMA;
-        } else { // Swap Box.
-            destroyMethodWeights[2] = gamma*destroyMethodWeights[2] + (1-gamma)*GAMMA;
-        }
     }
 
     private void chooseAndApplyDestroyMethod() {
@@ -134,88 +159,6 @@ public class Main extends Application {
         }
     }
 
-    private void houseLonelyBoxes(){
-        int i = 0;
-        for (Box box: poolOfAvailableBoxes) {
-            i++;
-            currentSolution.repair(box);
-        }
-        //printLonelyBoxes();
-        //System.out.println(i);
-        poolOfAvailableBoxes.clear();
-    }
-
-    private void printLonelyBoxes(){
-        for (Box box: poolOfAvailableBoxes) {
-            System.out.print("("+box.getWidth()+","+box.getHeight()+"),");
-        }
-        System.out.print("\n");
-    }
-    private void initialization(String path, int width) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(path));
-            String currentLine;
-            String boxData[];
-            int boxWidth, boxHeight;
-            numBoxes = 0;
-            currentSolution = new Solution(width);
-            while ((currentLine = reader.readLine()) != null) {
-                boxData = currentLine.split(",");
-                if (Integer.parseInt(boxData[0]) < Integer.parseInt(boxData[1])) {
-                    boxWidth = Integer.parseInt(boxData[0]);
-                    boxHeight = Integer.parseInt(boxData[1]);
-                } else {
-                    boxWidth = Integer.parseInt(boxData[1]);
-                    boxHeight = Integer.parseInt(boxData[0]);
-                }
-                Box box = new Box(boxWidth, boxHeight);
-                poolOfAvailableBoxes.add(box);
-
-                //currentSolution.repair(box);
-                numBoxes++;
-            }
-            //Collections.sort(poolOfAvailableBoxes, new SortBoxes());
-            //printLonelyBoxes();
-            houseLonelyBoxes();
-            //currentSolution.sortNeighbourhoodsByWidth();
-            globalBestSolution = new Solution(currentSolution);
-            previousSolution = new Solution(currentSolution);
-            globalBestSolution.printSolution();
-
-            // Init weights.
-            destroyMethodWeights[0] = 1.00;
-            destroyMethodWeights[1] = 1.00;
-            destroyMethodWeights[2] = 1.00;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null)
-                    reader.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
-        }
-    }
-
-    private void newBest(Solution solution) {
-        // If we have found a global best.
-        if (solution.totalHeight() < globalBestSolution.totalHeight()) {
-            globalBestSolution = new Solution(solution);
-            globalBestSolution.printHeight();
-            iterationResult = 0;
-        // If we are worse than the previous solution, revert to it and try again.
-        }else if(solution.totalHeight() >= previousSolution.totalHeight()) {
-            solution = new Solution(previousSolution);
-            iterationResult = 2;
-        } else
-            iterationResult = 1; // Found a better solution.
-
-        // Keep the solution for the next iteration.
-        previousSolution = new Solution(solution);
-    }
 
     // Destroy variables:
     private double d1DestructionVal = 0.4; // Percent of boxes to remove at random.
@@ -281,6 +224,55 @@ public class Main extends Application {
                 poolOfAvailableBoxes.add(box2);
         }
     }
+
+    private void updateDestroyWeights() {
+        double gamma = 0.6; // Strength of adjustment.
+        double GAMMA = -1;
+        // Choose the reward values for each result.
+        double w1 = 1.4; // Global.
+        double w2 = 1.2; // Better than Prev.
+        double w3 = 0.8; // Failed.
+
+        // Get the GAMMA value.
+        switch (iterationResult) {
+            case 0: {
+                GAMMA = w1;
+            }
+            case 1: {
+                GAMMA = w2;
+            }
+            case 2: {
+                GAMMA = w3;
+            }
+        }
+
+        if (lastUsedDestroyMethod == -1) return; // Error!
+        else if(lastUsedDestroyMethod == 0) { // Remove Box.
+            destroyMethodWeights[0] = gamma*destroyMethodWeights[0] + (1-gamma)*GAMMA;
+        } else if(lastUsedDestroyMethod == 1) { // Remove Neighbourhood.
+            destroyMethodWeights[1] = gamma*destroyMethodWeights[1] + (1-gamma)*GAMMA;
+        } else { // Swap Box.
+            destroyMethodWeights[2] = gamma*destroyMethodWeights[2] + (1-gamma)*GAMMA;
+        }
+    }
+
+    private void newBest(Solution solution) {
+        // If we have found a global best.
+        if (solution.totalHeight() < globalBestSolution.totalHeight()) {
+            globalBestSolution = new Solution(solution);
+            globalBestSolution.printHeight();
+            iterationResult = 0;
+            // If we are worse than the previous solution, revert to it and try again.
+        }else if(solution.totalHeight() >= previousSolution.totalHeight()) {
+            solution = new Solution(previousSolution);
+            iterationResult = 2;
+        } else
+            iterationResult = 1; // Found a better solution.
+
+        // Keep the solution for the next iteration.
+        previousSolution = new Solution(solution);
+    }
+
     // Draw method
     private void drawBoxes(Stage primaryStage, Solution solution) {
 
@@ -327,9 +319,6 @@ public class Main extends Application {
                 xLoc = 0;
                 yLoc -= neighbourhood.getTotalHeight()*sizeScalar;
             }
-
-
-
 
         } catch (Exception ex) {
             ex.printStackTrace();

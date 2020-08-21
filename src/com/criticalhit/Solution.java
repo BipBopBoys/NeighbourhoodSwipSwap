@@ -15,6 +15,15 @@ public class Solution {
         createNewRow();
     }
 
+    public Solution(Solution solution){
+        this.width = solution.width;
+        this.rows = new ArrayList<>();
+        for (Neighbourhood row: solution.rows) {
+            this.rows.add(new Neighbourhood(row));
+        }
+        System.out.print("");
+    }
+
     public void repair(Box box){
         sortNeighbourhoodsByWidth();
         for(int i = rows.size()-1; i >= 0;i--) {
@@ -25,28 +34,15 @@ public class Solution {
         rows.get(0).setBox(box);
     }
 
-    public Solution(Solution solution){
-        this.width = solution.width;
-        this.rows = new ArrayList<>();
-        for (Neighbourhood row: solution.rows) {
-            this.rows.add(new Neighbourhood(row));
-        }
-        System.out.print("");
-    }
+
     private void createNewRow(){
         Neighbourhood neighbourhood = new Neighbourhood(width);
         rows.add(0,neighbourhood);
     }
     private void createNewRow(Neighbourhood neighbourhood){
         rows.add(neighbourhood);
-    }/*
-    public void initBox(Box newBox){
-        if(!rows.get(rows.size()-1).setBox(newBox)){
-            createNewRow();
-        }
-        rows.get(rows.size()-1).setBox(newBox);
-        numBoxes++; // Count the absolute total number of boxes.
-    }*/
+    }
+
     public void printSolution(){
         for (Neighbourhood row: rows) {
             row.printRow();
@@ -90,29 +86,7 @@ public class Solution {
         rows.remove(index);
     }
 
-/*
-    public Boolean shakeupNeighbourhood(Neighbourhood neighbourhood){
-        Boolean broken = false;
-        Neighbourhood tmpNeighbourhood = new Neighbourhood(neighbourhood);
-        Neighbourhood bestTmpNeighbourhood = new Neighbourhood(neighbourhood);
-        Solution miniSolution,bestMiniSolution;
 
-        tmpNeighbourhood.shuffleOrBoogie();
-        if(tmpNeighbourhood.getTotalWidth() > width){
-            miniSolution = new Solution(width);
-            for (Box box: tmpNeighbourhood.getBoxes()) {
-                miniSolution.initBox(box);
-            }
-            if(miniSolution.totalHeight() < bestMiniSolution.getTotalHeight())
-                bestMiniSolution = new Solution(miniSolution);
-        }else if(tmpNeighbourhood.getTotalHeight()<bestTmpNeighbourhood.getTotalHeight())
-            bestTmpNeighbourhood = new Neighbourhood(tmpNeighbourhood);
-
-
-
-        return broken;
-    }
-*/
     public void finalPass(){
         sortSolutionByHeight();
         sortNeighbourhoodsByWidth();
